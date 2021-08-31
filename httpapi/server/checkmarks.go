@@ -1,28 +1,30 @@
 package server
 
 import (
+	"checkit/mark"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 func (s Server) getCheckMarks(c *gin.Context) {
-	mycheckmarks := []CheckMark{
-		{
-			ID:       "1",
-			UserID:   "2",
-			Time:     time.Now().GoString(),
-			Content:  "Run",
-			Category: GYM,
-		},
-		{
-			ID:       "2",
-			UserID:   "2",
-			Time:     time.Now().GoString(),
-			Content:  "Run",
-			Category: GYM,
-		},
+	mycheckMarks, err := s.controller.ListMarks()
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, err.Error)
 	}
-	c.IndentedJSON(http.StatusOK, mycheckmarks)
+	c.IndentedJSON(http.StatusOK, mycheckMarks)
+}
+
+func (s Server) createMark(c *gin.Context) {
+	var requestMark mark.CheckMark
+	if err := c.ShouldBindJSON(&requestMark); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := s.controller.CreateMark(requestMark)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, err.Error)
+	}
+	c.IndentedJSON(http.StatusOK, "")
 }

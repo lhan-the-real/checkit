@@ -1,34 +1,27 @@
 package server
 
 import (
+	"checkit/mark"
+
 	"github.com/gin-gonic/gin"
 )
 
-type CheckCategory string
-
-const (
-	GYM    CheckCategory = "Gym"
-	CODING CheckCategory = "Coding"
-)
-
-type CheckMark struct {
-	ID       string        `json:"id"`
-	UserID   string        `json:"user_id"`
-	Time     string        `json:"time"`
-	Content  string        `json:"content"`
-	Category CheckCategory `json:"category"`
-}
-
 type Server struct {
-	router *gin.Engine
+	router     *gin.Engine
+	controller mark.Controller
 }
 
 func NewServer() Server {
 	router := gin.Default()
 	srv := Server{
-		router: router,
+		router:     router,
+		controller: mark.NewController(),
 	}
-	srv.router.GET("/checkmarks", srv.getCheckMarks)
+	v1 := srv.router.Group("/v1")
+	{
+		v1.GET("/checkMarks", srv.getCheckMarks)
+		v1.POST("/checkMarks", srv.createMark)
+	}
 	return srv
 }
 
